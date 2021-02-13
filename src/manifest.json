@@ -1,0 +1,42 @@
+{
+	"manifest_version": 2,
+	"name": "DocJump",
+	"version": "0.1",
+	"description": "Doc Jumping Utility.",
+	"icons": {
+		"512": "icons/icon-512.png"
+	},
+	"page_action": {
+		"default_title": "Open DocJump",
+		"default_icon": {
+			"19": "icons/icon-19.png",
+			"38": "icons/icon-38.png"
+		},
+		"show_matches": [
+			"https://docs.oracle.com/*",
+			"https://docs.spring.io/*",
+			"https://projectreactor.io/*",
+			"https://docs.python.org/*",
+			"https://docs.docker.com/*"
+		]
+	},
+	"permissions": [
+		"https://docs.oracle.com/*",
+		"https://docs.spring.io/*",
+		"https://projectreactor.io/*",
+		"https://docs.python.org/*",
+		"https://docs.docker.com/*"
+	],
+	"background": {
+		"scripts": ["background.js"]
+	},
+	"commands": {
+		"_execute_page_action": {
+			"suggested_key": {
+				"default": "Ctrl+G",
+				"mac": "MacCtrl+G"
+			},
+			"description": "Open DocJump"
+		}
+	}
+}
