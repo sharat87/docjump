@@ -1,5 +1,31 @@
-(window.browser || window.chrome).pageAction.onClicked.addListener(tab => {
+if (typeof chrome != "undefined") {
+	window.browser = chrome;
+}
+
+browser.pageAction.onClicked.addListener(tab => {
 	browser.tabs.executeScript(tab.id, {
-		file: "/docJump.js",
+		file: "/content_script.js",
 	})
 })
+
+if (typeof chrome != "undefined") {
+	const manifest = chrome.runtime.getManifest();
+
+	const rules = manifest.permissions
+		.filter(perm => perm.startsWith("http://") || perm.startsWith("https://"))
+		.map(pat => pat.replace(/\*/g, ".*"))
+		.map(pat => ({
+			conditions: [
+				new chrome.declarativeContent.PageStateMatcher({
+					pageUrl: { originAndPathMatches: pat },
+				}),
+			],
+			actions: [
+				new chrome.declarativeContent.ShowPageAction(),
+			],
+		}));
+
+	chrome.declarativeContent.onPageChanged.removeRules(undefined, () => {
+		chrome.declarativeContent.onPageChanged.addRules(rules);
+	});
+}

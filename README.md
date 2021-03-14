@@ -30,4 +30,4 @@ very much.
 
 ## License
 
-This add-on's source code is licensed using the [MIT License](https://github.com/sharat87/docjump/blob/master/LICENSE).
+This add-on's source code is licensed using the [MIT License](https://addons.mozilla.org/addon/docjump/).

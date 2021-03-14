@@ -1,53 +1,64 @@
-(() => {
+import Scrapers from "./scrapers/index"
 
-const SCRAPERS = [];
+Scrapers.define(
+	[
+		/^https:\/\/docs\.oracle\.com\/\w+\/java\/javase\/(\d+)\/docs/,
+		/^https:\/\/docs\.spring\.io\/spring-data\/data-mongodb\/docs/,
+	],
+	(match) => {
+		const entries = []
+		const selectors = [
+			"a[id='constructor.detail']",
+			"a[id='field.detail']",
+			"a[id='method.detail']",
+			"a[name='constructor.detail']",
+			"a[name='field.detail']",
+			"a[name='method.detail']",
+		]
 
-// Also: <https://docs.spring.io/spring-data/data-mongodb/docs/current/api/org/springframework/data/mongodb/core/query/Update.AddToSetBuilder.html>
-defScraper([/^https:\/\/docs\.oracle\.com\/\w+\/java\/javase\/(\d+)\/docs/, /^https:\/\/docs\.spring\.io\/spring-data\/data-mongodb\/docs/], (match) => {
-	const entries = []
-	for (const methodDetailAnchor of document.querySelectorAll("a[id='constructor.detail'], a[id='field.detail'], a[id='method.detail']")) {
-		const methodAnchors = methodDetailAnchor.parentElement.querySelectorAll("a[id]")
+		for (const methodDetailAnchor of document.querySelectorAll(selectors.join(","))) {
+			const methodAnchors = methodDetailAnchor.parentElement.querySelectorAll("a[id], a[name]")
+			const type = (methodDetailAnchor.id || methodDetailAnchor.name).split(".")[0]
 
-		for (const anc of methodAnchors) {
-			const hash = anc.getAttribute("id");
-			if (hash === "method.detail") {
-				continue
-			}
-
-			let name;
-			let signatureLabel;
-			if (match[1] > 12) {
-				signatureLabel = anc.parentElement.nextElementSibling
-				const nameMatch = signatureLabel.innerText.match(/([a-zA-Z0-9_]+)\u200B?\(/)
-				name = nameMatch == null ? signatureLabel.innerText : nameMatch[1]
-			} else {
-				if (anc.nextElementSibling == null) {
-					console.warn("No next sibling for", anc)
+			for (const anc of methodAnchors) {
+				const hash = anc.getAttribute("id") || anc.getAttribute("name")
+				if (hash === "method.detail") {
 					continue
 				}
-				signatureLabel = anc.nextElementSibling.querySelector("pre")
-				name = signatureLabel == null ? "" : anc.nextElementSibling.querySelector("h4").innerText
+
+				let name;
+				let signatureLabel;
+				if (match[1] > 12) {
+					signatureLabel = anc.parentElement.nextElementSibling
+					const nameMatch = signatureLabel.innerText.match(/([a-zA-Z0-9_]+)\u200B?\(/)
+						name = nameMatch == null ? signatureLabel.innerText : nameMatch[1]
+					} else {
+						if (anc.nextElementSibling == null) {
+							console.warn("No next sibling for", anc)
+							continue
+						}
+						signatureLabel = anc.nextElementSibling.querySelector("pre")
+						name = signatureLabel == null ? "" : anc.nextElementSibling.querySelector("h4").innerText
+					}
+
+				if (signatureLabel == null) {
+					continue
+				}
+
+				entries.push({
+					type,
+					hash,
+					text: signatureLabel.innerText,
+					name,
+				})
 			}
-
-			if (signatureLabel == null) {
-				continue
-			}
-
-			const text = signatureLabel.innerText
-
-			entries.push({
-				type: methodDetailAnchor.id.split(".")[0],
-				hash,
-				text,
-				name,
-			})
 		}
-	}
 
-	return entries
-})
+		return entries
+	},
+)
 
-defScraper(/^https:\/\/projectreactor\.io\/docs\//, () => {
+Scrapers.define(/^https:\/\/projectreactor\.io\/docs/, () => {
 	const entries = []
 	const methodDetailAnchor = document.querySelector("a[name='method.detail']")
 	const methodAnchors = methodDetailAnchor.parentElement.querySelectorAll("a[name]")
@@ -81,7 +92,7 @@ defScraper(/^https:\/\/projectreactor\.io\/docs\//, () => {
 	return entries
 })
 
-defScraper(/^https:\/\/docs\.python\.org\/3\/library/, () => {
+Scrapers.define(/^https:\/\/docs\.python\.org\/3\/library/, () => {
 	const entries = []
 
 	for (const dl of document.querySelectorAll("dl.function, dl.method, dl.exception")) {
@@ -108,7 +119,7 @@ defScraper(/^https:\/\/docs\.python\.org\/3\/library/, () => {
 	return entries
 })
 
-defScraper(/^https:\/\/docs\.docker\.com/, () => {
+Scrapers.define(/^https:\/\/docs\.docker\.com/, () => {
 	const entries = []
 
 	let currentH2 = ""
@@ -146,7 +157,39 @@ defScraper(/^https:\/\/docs\.docker\.com/, () => {
 	return entries
 })
 
-showJumper()
+Scrapers.define(/^https:\/\/jestjs\.io\/docs/, () => {
+	console.log("jest scraper")
+	const entries = []
+
+	for (const header of document.querySelector(".docsContainer").querySelectorAll("h2, h3")) {
+		console.log("header", header)
+		const titleCodeEl = header.querySelector("code")
+
+		let title = ""
+		let text = ""
+
+		if (titleCodeEl == null) {
+			title = header.textContent
+		} else {
+			title = titleCodeEl.textContent
+			text = (titleCodeEl.nextSibling.textContent || "")
+		}
+
+		entries.push({
+			hash: header.querySelector("a[id]").id,
+			name: title,
+			text: text,
+		})
+	}
+
+	return entries
+})
+
+try {
+	showJumper()
+} catch (e) {
+	console.error("Error showing jumper", e)
+}
 
 function makeRoot() {
 	const root = document.createElement("div")
@@ -194,14 +237,10 @@ function makeRoot() {
 	return root
 }
 
-function defScraper(re, scraper) {
-	SCRAPERS.push({patterns: Array.isArray(re) ? re : [re], scraper})
-}
-
 function showJumper() {
 	const entries = []
 
-	for (const {patterns, scraper} of SCRAPERS) {
+	for (const {patterns, scraper} of Scrapers.getAll()) {
 		for (const re of patterns) {
 			const match = window.location.toString().match(re)
 			if (match) {
@@ -211,7 +250,7 @@ function showJumper() {
 		}
 	}
 
-	const prevRoot = document.getElementById("docJump")
+	const prevRoot = document.getElementById("docjump")
 	if (prevRoot != null) {
 		prevRoot.remove()
 	}
@@ -223,7 +262,9 @@ function showJumper() {
 	}
 
 	const container = document.createElement("div")
-	container.id = "docJump"
+	container.id = "docjump"
+	container.style.zIndex = Math.pow(10, 7)  // Needed to beat the cookie consent popup on `docs.oracle.com`.
+	container.style.position = "relative"
 	document.body.appendChild(container)
 
 	const root = makeRoot()
@@ -356,5 +397,3 @@ function on(emitter, eventName, listener) {
 		}
 	})
 }
-
-})();
