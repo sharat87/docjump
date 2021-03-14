@@ -14,6 +14,28 @@ Here's a preview of what this add-on offers:
 
 [![Get DocJump for Firefox](https://github.com/sharat87/docjump/blob/master/media/ext-firefox.png)](https://addons.mozilla.org/en-US/firefox/addon/docjump/)
 
+## Build Instructions
+
+Make sure you have Node.js `v14.15` and yarn `v1.22`.
+
+To build the firefox extension, run the following commands:
+
+```sh
+yarn install --frozen-lockfile
+make firefox
+```
+
+The firefox extension should now be located at `dist/firefox-docjump.zip`.
+
+To build the chrome extension, run the following commands:
+
+```sh
+yarn install --frozen-lockfile
+make chrome
+```
+
+The chrome extension should now be located at `dist/chrome-docjump.zip`.
+
 ## Support
 
 If you face any problems with the add-on, or want support for a new documentation site, please raise an issue on GitHub.
