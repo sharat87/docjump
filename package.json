@@ -1,7 +1,7 @@
 {
 	"name": "DocJump",
-	"version": "0.2",
-	"description": "A fuzzy-finder for methods, fields etc., in documentation reference pages for programming languages and software development frameworks.",
+	"version": "0.3",
+	"description": "A fuzzy-finder for methods, fields etc., in documentation pages for programming languages and software development frameworks.",
 	"repository": "git@github.com:sharat87/docjump.git",
 	"author": "Shrikant Sharat Kandula <shrikantsharat.k@gmail.com>",
 	"license": "MIT",

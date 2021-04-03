@@ -9,6 +9,7 @@ const manifest = {
 	"manifest_version": 2,
 	"name": pkg.name,
 	"version": pkg.version,
+	// The description must be <= 132 characters in length for the Chrome web store.
 	"description": pkg.description,
 	"icons": {
 		"512": "icon-512.png"

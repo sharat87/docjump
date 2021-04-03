@@ -9,3 +9,10 @@ help:
 	cp dist/build/*.js dist/$@/
 	cp -r icons/* dist/$@/
 	cd dist/$@ && zip -r ../$@-docjump.zip *
+
+src.zip: phony
+	test -f src.zip && rm src.zip
+	zip src.zip `git ls-files`
+
+
+.PHONY: phony
