@@ -12,7 +12,9 @@ Here's a preview of what this add-on offers:
 
 ## Get it
 
-[![Get DocJump for Firefox](https://github.com/sharat87/docjump/blob/master/media/ext-firefox.png)](https://addons.mozilla.org/en-US/firefox/addon/docjump/)
+[**Get DocJump for Firefox**](https://addons.mozilla.org/en-US/firefox/addon/docjump/).
+
+[**Get DocJump for Chrome**](https://chrome.google.com/webstore/detail/docjump/honoamahndiehddgbkdbdnljdaipbeff).
 
 ## Build Instructions
 
