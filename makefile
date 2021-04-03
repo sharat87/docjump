@@ -1,7 +1,6 @@
-help:
-	@echo "Run make firefox or make chrome to build extension for that browser."
+all: src-zip firefox chrome
 
-%:  # Can be `firefox` or `chrome`.
+firefox chrome:
 	mkdir -p dist/$@
 	rm -rf dist/build dist/$@/*
 	node manifest-generator.js $@ dist/$@/manifest.json
@@ -10,9 +9,7 @@ help:
 	cp -r icons/* dist/$@/
 	cd dist/$@ && zip -r ../$@-docjump.zip *
 
-src.zip: phony
-	test -f src.zip && rm src.zip
-	zip src.zip `git ls-files`
-
-
-.PHONY: phony
+src-zip:
+	test -f dist/src.zip && rm dist/src.zip || true
+	mkdir -p dist
+	zip dist/src.zip `git ls-files`
