@@ -10,6 +10,15 @@ Here's a preview of what this add-on offers:
 
 ![GIF Preview](https://github.com/sharat87/docjump/blob/master/media/preview.gif)
 
+## Supported Websites
+
+1. Oracle Java JDK (Java)
+1. Spring Framework (Java)
+1. Project Reactor (Java)
+1. Python
+1. Docker
+1. Jest (Javascript testing framework)
+
 ## Get it
 
 [**Get DocJump for Firefox**](https://addons.mozilla.org/en-US/firefox/addon/docjump/).
