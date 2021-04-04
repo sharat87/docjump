@@ -2,8 +2,6 @@ export default {
 
 	patterns: [
 		/^https:\/\/docs\.oracle\.com\/\w+\/java\/javase\/(\d+)\/docs/,
-		/^https:\/\/docs\.spring\.io\/spring-data\/[-a-z]+\/docs/,
-		/^https:\/\/docs\.spring\.io\/spring-framework\/docs/,
 	],
 
 	scraper(match) {
