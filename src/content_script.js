@@ -1,190 +1,55 @@
-import Scrapers from "./scrapers/index"
+// Glob modules in ParcelJS: <https://parceljs.org/module_resolution.html#glob-file-paths>.
+import scraperModules from "./scrapers/*.js"
 
-Scrapers.define(
-	[
-		/^https:\/\/docs\.oracle\.com\/\w+\/java\/javase\/(\d+)\/docs/,
-		/^https:\/\/docs\.spring\.io\/spring-data\/[-a-z]+\/docs/,
-		/^https:\/\/docs\.spring\.io\/spring-framework\/docs/,
-	],
-	(match) => {
-		const entries = []
-		const selectors = [
-			"a[id='constructor.detail']",
-			"a[id='field.detail']",
-			"a[id='method.detail']",
-			"a[name='constructor.detail']",
-			"a[name='field.detail']",
-			"a[name='method.detail']",
-		]
-
-		for (const methodDetailAnchor of document.querySelectorAll(selectors.join(","))) {
-			const methodAnchors = methodDetailAnchor.parentElement.querySelectorAll("a[id], a[name]")
-			const type = (methodDetailAnchor.id || methodDetailAnchor.name).split(".")[0]
-
-			for (const anc of methodAnchors) {
-				const hash = anc.getAttribute("id") || anc.getAttribute("name")
-				if (hash === "method.detail") {
-					continue
-				}
-
-				let name;
-				let signatureLabel;
-				if (match[1] > 12) {
-					signatureLabel = anc.parentElement.nextElementSibling
-					const nameMatch = signatureLabel.innerText.match(/([a-zA-Z0-9_]+)\u200B?\(/)
-						name = nameMatch == null ? signatureLabel.innerText : nameMatch[1]
-					} else {
-						if (anc.nextElementSibling == null) {
-							console.warn("No next sibling for", anc)
-							continue
-						}
-						signatureLabel = anc.nextElementSibling.querySelector("pre")
-						name = signatureLabel == null ? "" : anc.nextElementSibling.querySelector("h4").innerText
-					}
-
-				if (signatureLabel == null) {
-					continue
-				}
-
-				entries.push({
-					type,
-					hash,
-					text: signatureLabel.innerText,
-					name,
-				})
-			}
-		}
-
-		return entries
+/*
+This `scraperModules` object looks like:
+{
+	filename1: {
+		__esModule: true,
+		default: {
+			patterns: ...,
+			scraper: ...,
+		},
 	},
-)
-
-Scrapers.define(/^https:\/\/projectreactor\.io\/docs/, () => {
-	const entries = []
-	const methodDetailAnchor = document.querySelector("a[name='method.detail']")
-	const methodAnchors = methodDetailAnchor.parentElement.querySelectorAll("a[name]")
-
-	for (const anc of methodAnchors) {
-		if (anc.name === "method.detail") {
-			continue
-		}
-
-		if (anc.nextElementSibling == null) {
-			console.warn("No next sibling for", anc)
-			continue
-		}
-
-		const signatureLabel = anc.nextElementSibling.querySelector("pre")
-		if (signatureLabel == null) {
-			continue
-		}
-
-		const text = signatureLabel.innerText
-		const name = text.match(/\s([a-zA-Z0-9_]+)\(/)[1];
-
-		entries.push({
-			type: "method",
-			hash: anc.name,
-			text,
-			name,
-		})
+	filename2: {
+		__esModule: true,
+		default: {
+			patterns: ...,
+			scraper: ...,
+		},
 	}
+}
+*/
 
-	return entries
-})
-
-Scrapers.define(/^https:\/\/docs\.python\.org\/3\/library/, () => {
-	const entries = []
-
-	for (const dl of document.querySelectorAll("dl.function, dl.method, dl.exception")) {
-		const dt = dl.firstElementChild
-		const type = dl.className
-
-		let preName = ""
-		if (dt.querySelector(".sig-prename")) {
-			preName = dt.querySelector(".sig-prename").innerText
-		} else if (type === "method" && dl.parentElement.parentElement.matches("dl.class")) {
-			// This happens for the `logging` module.
-			preName = dl.parentElement.previousElementSibling.id + "."
-		}
-
-		entries.push({
-			type,
-			hash: dt.id,
-			text: dt.innerText,
-			name: dt.querySelector(".sig-name").innerText,
-			preName,
-		})
+// TODO: Support auto-dark mode.
+const CSS = `
+	:placeholder-shown { font-style: italic; }
+	.b {
+		position: fixed;
+		top: 1rem;
+		left: 50vw;
+		transform: translateX(-50%);
+		width: 60ch;
+		max-height: 70vh;
+		display: flex;
+		flex-direction: column;
+		font-family: monospace;
+		font-size: 18px;
+		text-align: left;
+		background-color: #FFF;
+		color: #111;
+		box-shadow: 0 0 24px #0009;
+		z-index: 9999;
 	}
-
-	return entries
-})
-
-Scrapers.define(/^https:\/\/docs\.docker\.com/, () => {
-	const entries = []
-
-	let currentH2 = ""
-	let currentH3 = ""
-
-	for (const header of document.querySelectorAll("h2, h3, h4")) {
-		const title = header.firstChild.textContent
-
-		if (header.tagName === "H2") {
-			currentH2 = title
-			currentH3 = ""
-		} else if (header.tagName === "H3") {
-			currentH3 = title
-		}
-
-		const anchor = header.querySelector("a")
-		if (anchor == null) {
-			continue
-		}
-
-		let text = ""
-		if (header.tagName === "H4") {
-			text = currentH2 + (currentH2 && currentH3 ? " &rarr; " : "") + currentH3
-		} else if (header.tagName === "h3") {
-			text = currentH2
-		}
-
-		entries.push({
-			hash: header.id,
-			name: title,
-			text: currentH2 + " &rarr; " + currentH3,
-		})
-	}
-
-	return entries
-})
-
-Scrapers.define(/^https:\/\/jestjs\.io\/docs/, () => {
-	console.log("jest scraper")
-	const entries = []
-
-	for (const header of document.querySelector(".docsContainer").querySelectorAll("h2, h3")) {
-		console.log("header", header)
-		const titleCodeEl = header.querySelector("code")
-
-		let title = ""
-		let text = ""
-
-		if (titleCodeEl == null) {
-			title = header.textContent
-		} else {
-			title = titleCodeEl.textContent
-			text = (titleCodeEl.nextSibling.textContent || "")
-		}
-
-		entries.push({
-			hash: header.querySelector("a[id]").id,
-			name: title,
-			text: text,
-		})
-	}
-
-	return entries
-})
+	input { color: inherit; background-color: transparent; font: inherit; border: none; width: 100%; padding: 6px; }
+	.r { overflow-y: auto; }
+	.r a { display: block; text-decoration: none; padding: 3px 6px; color: inherit; }
+	.r a .t { font-size: .8em; }
+	.r a .type { opacity: .5; font-style: italic; font-size: .6em; margin-left: 2ch; }
+	.r a:hover { background-color: #CEF; }
+	.r a.active { background-color: #09F; color: #EEF; }
+	.r .hl { color: orange; }
+`
 
 try {
 	showJumper()
@@ -193,6 +58,9 @@ try {
 }
 
 function makeRoot() {
+	// We create the whole markup using DOM APIs because inserting direct HTML makes Firefox Addons server's auto
+	// linting system flare up.
+
 	const root = document.createElement("div")
 	root.classList.add("b")
 
@@ -206,44 +74,22 @@ function makeRoot() {
 	root.appendChild(resultsBox)
 
 	const style = document.createElement("style")
-	style.innerText = `
-	:placeholder-shown { font-style: italic; }
-	.b {
-	  position: fixed;
-	  top: 1rem;
-	  left: 50vw;
-	  transform: translateX(-50%);
-	  width: 60ch;
-	  max-height: 70vh;
-	  display: flex;
-	  flex-direction: column;
-	  font-family: monospace;
-	  font-size: 18px;
-	  background-color: #FFF;
-	  color: #111;
-	  box-shadow: 0 0 24px #0009;
-	  z-index: 9999;
-	}
-	input { color: inherit; background-color: transparent; font: inherit; border: none; width: 100%; padding: 6px; }
-	.r { overflow-y: auto; }
-	.r a { display: block; text-decoration: none; padding: 3px 6px; color: inherit; }
-	.r a .t { font-size: .8em; }
-	.r a .type { opacity: .5; font-style: italic; font-size: .6em; margin-left: 2ch; }
-	.r a:hover { background-color: #CEF; }
-	.r a.active { background-color: #09F; color: #EEF; }
-	.r .hl { color: orange; }
-	`
+	style.innerText = CSS
 	root.appendChild(style)
 
 	return root
 }
 
+function locationMatch(pattern) {
+	return window.location.toString().match(pattern)
+}
+
 function showJumper() {
 	const entries = []
 
-	for (const {patterns, scraper} of Scrapers.getAll()) {
+	for (const { default: { patterns, scraper } } of Object.values(scraperModules)) {
 		for (const re of patterns) {
-			const match = window.location.toString().match(re)
+			const match = locationMatch(re)
 			if (match) {
 				entries.push(...scraper(match))
 				break
@@ -269,7 +115,7 @@ function showJumper() {
 	document.body.appendChild(container)
 
 	const root = makeRoot()
-	const shadow = container.attachShadow({mode: "open"})
+	const shadow = container.attachShadow({ mode: "open" })
 	shadow.appendChild(root)
 
 	const resultsBox = root.querySelector(".r")
@@ -310,7 +156,7 @@ function showJumper() {
 
 			const subtitleEl = document.createElement("div")
 			subtitleEl.classList.add("t")
-			subtitleEl.innerText = entry.text
+			subtitleEl.innerText = entry.text == null ? "" : entry.text
 			anchor.appendChild(subtitleEl)
 
 			resultsBox.appendChild(anchor)
