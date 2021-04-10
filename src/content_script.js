@@ -2,6 +2,13 @@
 import scraperModules from "./scrapers/*.js"
 
 /*
+todo:
+- Cmd+Arrow keys to scroll to top or bottom.
+- PageUp and PageDown keys.
+- Cmd+1 to Cmd+9 to directly to jump to the nth item in results.
+*/
+
+/*
 This `scraperModules` object looks like:
 {
 	filename1: {
@@ -21,7 +28,6 @@ This `scraperModules` object looks like:
 }
 */
 
-// TODO: Support auto-dark mode.
 const CSS = `
 	:placeholder-shown { font-style: italic; }
 	.b {
@@ -36,12 +42,15 @@ const CSS = `
 		font-family: monospace;
 		font-size: 18px;
 		text-align: left;
-		background-color: #FFF;
+		background-color: #fff;
 		color: #111;
 		box-shadow: 0 0 24px #0009;
+		border-radius: 3px;
+		overflow: hidden;
 		z-index: 9999;
 	}
-	input { color: inherit; background-color: transparent; font: inherit; border: none; width: 100%; padding: 6px; }
+	input { color: inherit; background-color: transparent; font: inherit; border: none; width: 100%; padding: 6px; opacity: .6; }
+	input:focus { outline: none; opacity: 1; }
 	.r { overflow-y: auto; }
 	.r a { display: block; text-decoration: none; padding: 3px 6px; color: inherit; }
 	.r a .t { font-size: .8em; }
@@ -49,6 +58,16 @@ const CSS = `
 	.r a:hover { background-color: #CEF; }
 	.r a.active { background-color: #09F; color: #EEF; }
 	.r .hl { color: orange; }
+	@media (prefers-color-scheme: dark) {
+		.b {
+			background-color: #222;
+			color: #eee;
+		}
+		.r a:hover {
+			background-color: #111;
+			color: #fff;
+		}
+	}
 `
 
 try {
@@ -129,11 +148,15 @@ function showJumper() {
 		}
 
 		const results = []
+		let count = 0
 
 		for (const entry of entries) {
 			const result = fuzzyFind(entry.name, needle);
 			if (result != null) {
 				results.push([entry, result])
+				if (++count >= 30) {
+					break
+				}
 			}
 		}
 
@@ -156,7 +179,7 @@ function showJumper() {
 
 			const subtitleEl = document.createElement("div")
 			subtitleEl.classList.add("t")
-			subtitleEl.innerText = entry.text == null ? "" : entry.text
+			subtitleEl.innerHTML = entry.text == null ? "" : entry.text
 			anchor.appendChild(subtitleEl)
 
 			resultsBox.appendChild(anchor)
@@ -215,9 +238,9 @@ function fuzzyFind(haystack, needle) {
 	// Higher the weight, the lower it goes in the results.
 	let weight = 0
 	const indices = []
-	let needleIndex = 0
+	let haystackIndex = 0, needleIndex = 0
 
-	for (let haystackIndex = 0; haystackIndex < haystack.length && needleIndex < needle.length; ++haystackIndex) {
+	for (; haystackIndex < haystack.length && needleIndex < needle.length; ++haystackIndex) {
 		const hay = haystack[haystackIndex],
 			lowerHay = hay.toLowerCase(),
 			prevHay = hay[haystackIndex - 1]
@@ -230,6 +253,12 @@ function fuzzyFind(haystack, needle) {
 			++needleIndex
 			indices.unshift(haystackIndex)
 		}
+	}
+
+	if (haystackIndex < haystack.length) {
+		// If there's lots of remaining characters in the haystack, make it that much heavier.
+		// Since the user can type extra characters to pull them up in the results.
+		weight += haystack.length - haystackIndex
 	}
 
 	return needleIndex < needle.length ? null : {weight, indices}
