@@ -2,12 +2,6 @@
 import scraperModules from "./scrapers/*.js"
 
 /*
-todo:
-- PageUp and PageDown keys.
-- Cmd+1 to Cmd+9 to directly to jump to the nth item in results.
-*/
-
-/*
 This `scraperModules` object looks like:
 {
 	filename1: {
@@ -121,8 +115,8 @@ function showJumper() {
 	}
 
 	if (entries.length === 0) {
-		// TODO: Offer to report this URL for not producing any jump targets.
-		alert("No jump targets found.")
+		alert("No jump targets found." +
+			" Please report this link at https://github.com/sharat87/docjump/issues/new. Thank you!")
 		return
 	}
 
