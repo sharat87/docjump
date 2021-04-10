@@ -1,4 +1,4 @@
-if (typeof chrome != "undefined") {
+if (process.env.BROWSER === "chrome") {
 	window.browser = chrome;
 }
 
@@ -8,7 +8,7 @@ browser.pageAction.onClicked.addListener(tab => {
 	})
 })
 
-if (typeof chrome != "undefined") {
+if (process.env.BROWSER === "chrome") {
 	const manifest = chrome.runtime.getManifest();
 
 	const rules = manifest.permissions

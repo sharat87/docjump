@@ -172,7 +172,7 @@ function showJumper() {
 
 			const subtitleEl = document.createElement("div")
 			subtitleEl.classList.add("t")
-			subtitleEl.innerHTML = entry.text == null ? "" : entry.text
+			subtitleEl.innerText = renderHtmlEntities(entry.text == null ? "" : entry.text)
 			anchor.appendChild(subtitleEl)
 
 			resultsBox.appendChild(anchor)
@@ -279,6 +279,19 @@ function fuzzyFind(haystack, needle) {
 	}
 
 	return needleIndex < needle.length ? null : {weight, indices}
+}
+
+function renderHtmlEntities(text) {
+	return text
+		.replace(/&amp;/g, "&")
+		.replace(/&lt;/g, "<")
+		.replace(/&gt;/g, ">")
+		.replace(/&larr;/g, "\u2190")
+		.replace(/&uarr;/g, "\u2191")
+		.replace(/&rarr;/g, "\u2192")
+		.replace(/&darr;/g, "\u2193")
+		.replace(/&ndash;/g, "\u2013")
+		.replace(/&mdash;/g, "\u2014")
 }
 
 function on(emitter, eventName, listener) {
