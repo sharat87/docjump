@@ -3,7 +3,6 @@ import scraperModules from "./scrapers/*.js"
 
 /*
 todo:
-- Cmd+Arrow keys to scroll to top or bottom.
 - PageUp and PageDown keys.
 - Cmd+1 to Cmd+9 to directly to jump to the nth item in results.
 */
@@ -206,28 +205,48 @@ function showJumper() {
 			} else {
 				container.remove()
 			}
-		} else if (event.key === "ArrowDown" || (event.key === "n" && event.ctrlKey)) {
-			const currentActive = resultsBox.querySelector(".active")
+			return
+		}
+
+		const currentActive = resultsBox.querySelector(".active")
+		let newActive = null
+
+		if (event.key === "ArrowDown" && (event.ctrlKey || event.metaKey)) {
 			if (currentActive != null && currentActive.nextElementSibling != null) {
-				currentActive.classList.remove("active")
-				currentActive.nextElementSibling.classList.add("active")
-				currentActive.nextElementSibling.scrollIntoView(false)
+				newActive = currentActive.parentElement.lastElementChild
 			}
 			event.preventDefault()
-		} else if (event.key === "ArrowUp" || (event.key === "p" && event.ctrlKey)) {
-			const currentActive = resultsBox.querySelector(".active")
+
+		} else if (event.key === "ArrowDown" || (event.key === "n" && event.ctrlKey)) {
+			if (currentActive != null && currentActive.nextElementSibling != null) {
+				newActive = currentActive.nextElementSibling
+			}
+			event.preventDefault()
+
+		} else if (event.key === "ArrowUp" && (event.ctrlKey || event.metaKey)) {
 			if (currentActive != null && currentActive.previousElementSibling != null) {
-				currentActive.classList.remove("active")
-				currentActive.previousElementSibling.classList.add("active")
-				currentActive.previousElementSibling.scrollIntoView(false)
+				newActive = currentActive.parentElement.firstElementChild
 			}
 			event.preventDefault()
+
+		} else if (event.key === "ArrowUp" || (event.key === "p" && event.ctrlKey)) {
+			if (currentActive != null && currentActive.previousElementSibling != null) {
+				newActive = currentActive.previousElementSibling
+			}
+			event.preventDefault()
+
 		} else if (event.key === "Enter") {
-			const currentActive = resultsBox.querySelector(".active")
 			if (currentActive != null) {
 				currentActive.click()
 				event.preventDefault()
 			}
+
+		}
+
+		if (newActive != null) {
+			currentActive.classList.remove("active")
+			newActive.classList.add("active")
+			newActive.scrollIntoView(false)
 		}
 	})
 
