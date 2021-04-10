@@ -246,7 +246,11 @@ function showJumper() {
 		if (newActive != null) {
 			currentActive.classList.remove("active")
 			newActive.classList.add("active")
-			newActive.scrollIntoView(false)
+			newActive.scrollIntoView({
+				behavior: "smooth",
+				block: "center",
+				inline: "center",
+			})
 		}
 	})
 
