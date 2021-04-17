@@ -1,7 +1,7 @@
 export default {
 
-	patterns: [
-		/^https:\/\/jestjs\.io\/docs/,
+	globs: [
+		"https://jestjs.io/docs/*",
 	],
 
 	scraper() {

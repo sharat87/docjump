@@ -1,7 +1,7 @@
 export default {
 
-	patterns: [
-		/^https:\/\/projectreactor\.io\/docs/,
+	globs: [
+		"https://projectreactor.io/docs/*",
 	],
 
 	scraper() {

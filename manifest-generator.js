@@ -1,20 +1,22 @@
 const fs = require("fs")
+const glob = require("glob")
+const path = require("path")
 
 const browser = process.argv[2]
 const outFile = process.argv[3]
 
 const pkg = JSON.parse(fs.readFileSync("package.json", { encoding: "utf-8" }))
 
-const SUPPORTED_URL_GLOBS = [
-	"https://docs.oracle.com/*",
-	"https://docs.spring.io/*",
-	"https://projectreactor.io/*",
-	"https://docs.python.org/*",
-	"https://docs.docker.com/*",
-	"https://nodejs.org/api/*",
-	"https://jestjs.io/*",
-	"https://golang.org/pkg/*",
-]
+const SUPPORTED_URL_GLOBS = []
+
+for (const file of glob.sync("./src/scrapers/*.js")) {
+	const module = require(file).default
+	if (module.globs == null) {
+		SUPPORTED_URL_GLOBS.push("https://" + path.basename(file, ".js") + "/*")
+	} else {
+		SUPPORTED_URL_GLOBS.push(...module.globs)
+	}
+}
 
 const manifest = {
 	manifest_version: 2,

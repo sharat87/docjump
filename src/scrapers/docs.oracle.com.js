@@ -1,10 +1,16 @@
 export default {
 
-	patterns: [
-		/^https:\/\/docs\.oracle\.com\/\w+\/java\/javase\/(\d+)\/docs/,
+	globs: [
+		"https://docs.oracle.com/*",
 	],
 
-	scraper(match) {
+	scraper() {
+		const match = window.location.toString().match(/^https:\/\/docs\.oracle\.com\/\w+\/java\/javase\/(\d+)\/docs/)
+
+		if (!match) {
+			return []
+		}
+
 		const entries = []
 		const selectors = [
 			"a[id='constructor.detail']",

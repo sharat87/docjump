@@ -1,7 +1,7 @@
 export default {
 
-	patterns: [
-		/^https:\/\/golang\.org\/pkg/,
+	globs: [
+		"https://golang.org/pkg/*",
 	],
 
 	scraper() {

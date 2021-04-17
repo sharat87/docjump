@@ -1,9 +1,5 @@
 export default {
 
-	patterns: [
-		/^https:\/\/docs\.docker\.com/,
-	],
-
 	scraper() {
 		const entries = []
 

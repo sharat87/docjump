@@ -1,9 +1,5 @@
 export default {
 
-	patterns: [
-		/^https:\/\/docs\.python\.org\/3\/library/,
-	],
-
 	scraper() {
 		const entries = []
 

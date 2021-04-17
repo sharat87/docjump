@@ -4,17 +4,17 @@ import scraperModules from "./scrapers/*.js"
 /*
 This `scraperModules` object looks like:
 {
-	filename1: {
+	module1: {
 		__esModule: true,
 		default: {
-			patterns: ...,
+			globs: ...,
 			scraper: ...,
 		},
 	},
-	filename2: {
+	module2: {
 		__esModule: true,
 		default: {
-			patterns: ...,
+			globs: ...,
 			scraper: ...,
 		},
 	}
@@ -37,15 +37,31 @@ const CSS = `
 		text-align: left;
 		background-color: #fff;
 		color: #111;
-		box-shadow: 0 0 24px #0009;
+		box-shadow: 0 0 36px #000A;
 		border-radius: 3px;
 		overflow: hidden;
 		z-index: 9999;
 	}
-	input { color: inherit; background-color: transparent; font: inherit; border: none; width: 100%; padding: 6px; opacity: .6; }
+	input {
+		color: inherit;
+		background-color: transparent;
+		font: inherit;
+		border: none;
+		border-bottom: 1px solid currentColor;
+		width: 100%;
+		padding: 6px;
+		line-height: 1.7;
+		opacity: .6;
+	}
 	input:focus { outline: none; opacity: 1; }
 	.r { overflow-y: auto; }
-	.r a { display: block; text-decoration: none; padding: 3px 6px; color: inherit; }
+	.r a {
+		display: block;
+		text-decoration: none;
+		padding: 3px 6px;
+		color: inherit;
+		transition: background-color .05s ease-out, color .05s ease-out;
+	}
 	.r a .t { font-size: .8em; }
 	.r a .type { opacity: .5; font-style: italic; font-size: .6em; margin-left: 2ch; }
 	.r a:hover { background-color: #CEF; }
@@ -97,17 +113,7 @@ function locationMatch(pattern) {
 }
 
 function showJumper() {
-	const entries = []
-
-	for (const { default: { patterns, scraper } } of Object.values(scraperModules)) {
-		for (const re of patterns) {
-			const match = locationMatch(re)
-			if (match) {
-				entries.push(...scraper(match))
-				break
-			}
-		}
-	}
+	const entries = scraperModules[location.hostname].default.scraper()
 
 	const prevRoot = document.getElementById("docjump")
 	if (prevRoot != null) {
@@ -116,7 +122,7 @@ function showJumper() {
 
 	if (entries.length === 0) {
 		alert("No jump targets found." +
-			" Please report this link at https://github.com/sharat87/docjump/issues/new. Thank you!")
+			" Please report this URL at https://github.com/sharat87/docjump/issues/new. Thank you!")
 		return
 	}
 

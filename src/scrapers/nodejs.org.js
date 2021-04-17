@@ -1,7 +1,7 @@
 export default {
 
-	patterns: [
-		/^https:\/\/nodejs\.org\/api/,
+	globs: [
+		"https://nodejs.org/api/*",
 	],
 
 	scraper() {

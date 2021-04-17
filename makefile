@@ -3,7 +3,7 @@ all: src-zip firefox chrome
 firefox chrome:
 	mkdir -p dist/$@
 	rm -rf dist/build dist/$@/*
-	node manifest-generator.js $@ dist/$@/manifest.json
+	node -r esm manifest-generator.js $@ dist/$@/manifest.json
 	BROWSER=$@ npx parcel build --no-source-maps --out-dir dist/build src/{background,content_script}.js
 	cp dist/build/*.js dist/$@/
 	cp -r icons/* dist/$@/
